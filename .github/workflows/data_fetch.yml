@@ -26,6 +26,11 @@ jobs:
         run: |
           python fetch-data.py
 
+      - name: Set Git Identity
+        run: |
+          git config --global user.email "gamingnotch4u@gmail.com"
+          git config --global user.name "GaamaAala"
+
       - name: Commit and push updated CSV file
         run: |
           git add data.csv
