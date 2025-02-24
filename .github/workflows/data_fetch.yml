@@ -5,7 +5,7 @@ on:
     - cron: "*/10 * * * *"  # Runs every 10 minutes (change as needed)
 
 jobs:
-  fetch-data:
+  data_fetch:
     runs-on: ubuntu-latest
 
     steps:
