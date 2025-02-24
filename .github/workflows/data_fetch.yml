@@ -1,0 +1,32 @@
+name: Fetch Data Every 10 Minutes
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # Runs every 10 minutes
+  workflow_dispatch:  # Allows manual execution
+
+jobs:
+  fetch_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests pandas  # Install required libraries
+
+      - name: Run data fetching script
+        run: python fetch-data.py  # Run the fetch_data script
+
+      - name: Commit and Push Data
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Update data" || echo "No changes to commit"
+          git push
