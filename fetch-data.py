@@ -13,7 +13,7 @@ HEADERS = {
 CSV_FILE = "data.csv"
 CSV_HEADERS = ["Period", "Number", "Premium"]
 
-# Function to fetch data (only the first row)
+# Function to fetch data (all rows)
 def fetch_data():
     payload = {
         "pageSize": 10,
@@ -30,7 +30,7 @@ def fetch_data():
     if response.status_code == 200:
         data = response.json()
         if "data" in data and "list" in data["data"]:
-            return data["data"]["list"][0]  # Only return the first row
+            return data["data"]["list"]  # Return all rows in the "list" field
     
     return None
 
@@ -44,20 +44,22 @@ def is_new_period(period):
     return period not in existing_periods
 
 # Function to write data to CSV
-def write_to_csv(item):
-    period = item["issueNumber"]
-    number = item["number"]
-    premium = item["premium"]
-
-    if is_new_period(period):  # Only write if it's a new period
-        with open(CSV_FILE, "a", newline="") as file:
-            writer = csv.writer(file)
-            if os.stat(CSV_FILE).st_size == 0:
-                writer.writerow(CSV_HEADERS)  # Write headers if file is empty
-            writer.writerow([period, number, premium])
-        print(f"✅ New period added: {period}")
-    else:
-        print(f"⚠️ Duplicate period skipped: {period}")
+def write_to_csv(items):
+    with open(CSV_FILE, "a", newline="") as file:
+        writer = csv.writer(file)
+        if os.stat(CSV_FILE).st_size == 0:
+            writer.writerow(CSV_HEADERS)  # Write headers if file is empty
+        
+        for item in items:
+            period = item["issueNumber"]
+            number = item["number"]
+            premium = item["premium"]
+            
+            if is_new_period(period):  # Only write if it's a new period
+                writer.writerow([period, number, premium])
+                print(f"✅ New period added: {period}")
+            else:
+                print(f"⚠️ Duplicate period skipped: {period}")
 
 # Main function to fetch data
 def main():
