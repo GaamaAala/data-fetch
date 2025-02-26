@@ -3,6 +3,7 @@ name: Fetch Data and Upload CSV
 on:
   schedule:
     - cron: "*/10 * * * *"  # Runs every 10 minutes
+  workflow_dispatch:  # Enables manual trigger
 
 jobs:
   fetch-data:
