@@ -35,31 +35,43 @@ def fetch_data():
     return None
 
 # Function to check if period already exists in CSV
-def is_new_period(period):
+def get_existing_periods():
     if not os.path.exists(CSV_FILE):
-        return True  # If file doesn't exist, consider all periods new
+        return set()  # If file doesn't exist, return empty set
 
     with open(CSV_FILE, "r") as file:
-        existing_periods = {line.split(",")[0] for line in file.readlines()[1:]}  # Read existing periods
-    return period not in existing_periods
+        return {line.split(",")[0] for line in file.readlines()[1:]}  # Read existing periods
 
-# Function to write data to CSV
+# Function to write data to CSV (prepend new rows)
 def write_to_csv(items):
-    with open(CSV_FILE, "a", newline="") as file:
-        writer = csv.writer(file)
-        if os.stat(CSV_FILE).st_size == 0:
-            writer.writerow(CSV_HEADERS)  # Write headers if file is empty
+    existing_periods = get_existing_periods()
+    new_data = []
+
+    for item in items:
+        period = item["issueNumber"]
+        number = item["number"]
+        premium = item["premium"]
         
-        for item in items:
-            period = item["issueNumber"]
-            number = item["number"]
-            premium = item["premium"]
-            
-            if is_new_period(period):  # Only write if it's a new period
-                writer.writerow([period, number, premium])
-                print(f"✅ New period added: {period}")
-            else:
-                print(f"⚠️ Duplicate period skipped: {period}")
+        if period not in existing_periods:  # Only add if it's a new period
+            new_data.append([period, number, premium])
+            print(f"✅ New period added: {period}")
+        else:
+            print(f"⚠️ Duplicate period skipped: {period}")
+
+    if new_data:
+        # Read existing data
+        existing_data = []
+        if os.path.exists(CSV_FILE):
+            with open(CSV_FILE, "r") as file:
+                existing_data = file.readlines()
+        
+        # Write new data at the top
+        with open(CSV_FILE, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(CSV_HEADERS)  # Write header
+            writer.writerows(new_data)  # Write new rows first
+            if existing_data:
+                file.writelines(existing_data[1:])  # Append old data (skip header)
 
 # Main function to fetch data
 def main():
